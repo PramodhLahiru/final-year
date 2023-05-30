@@ -1,0 +1,30 @@
+import cv2
+import numpy as np
+
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    img = cv2.equalizeHist(img)
+    img = cv2.GaussianBlur(img, (9, 9), 0)
+    img = cv2.Canny(img, 40, 80)
+
+    lined = np.copy(frame) * 0
+    lines = cv2.HoughLinesP(img, 1, np.pi / 180, 15, np.array([]), 50, 20)
+    if lines is not None:
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                cv2.line(lined, (x1, y1), (x2, y2), (0, 0, 255))
+
+    output = cv2.addWeighted(frame, 0.8, lined, 1, 0)
+
+    cv2.imshow('Hand Detection', output)
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
